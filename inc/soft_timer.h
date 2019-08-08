@@ -1,5 +1,5 @@
 /**
- * @file soft_timer_adapter.h
+ * @file soft_timer.h
  *
  * @brief Software timer adapter.
  *
