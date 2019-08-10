@@ -2,7 +2,7 @@
 
 Esse repositório contém uma biblioteca para lidar com timers feitos por software.
 
-Essa biblioteca foi feita para ser utilizadas como submódulo no [STM32ProjectTemplate](https://github.com/ThundeRatz/STM32ProjectTemplate).
+Essa biblioteca foi feita para ser utilizada como submódulo no [STM32ProjectTemplate](https://github.com/ThundeRatz/STM32ProjectTemplate).
 
 ## Utilizando a biblioteca
 
