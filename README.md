@@ -15,7 +15,7 @@ Além disso, é necessário declarar a função de interrupção de quando ocorr
 
 ```C
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-    /**< Code */
+    /* Code */
 }
 ```
 Dentro dessa função de interrupção é necessário verificar qual instância de timer em hardware causou a interrupção e chamar a seguinte função:
