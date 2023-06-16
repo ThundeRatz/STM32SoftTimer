@@ -325,6 +325,10 @@ void timer_step(soft_timer_t* timer, uint16_t time_step_ms) {
         return;
     }
 
+    if ((timer->countdown_ms == 0) && (time_step_ms != 0)) {
+        return;
+    }
+
     timer->countdown_ms -= time_step_ms;
 
     if (timer->countdown_ms != 0) {
