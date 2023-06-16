@@ -329,6 +329,7 @@ void timer_step(soft_timer_t* timer, uint16_t time_step_ms) {
         return;
     }
 
+    timer->countdown_ms = max(timer->countdown_ms, time_step_ms);
     timer->countdown_ms -= time_step_ms;
 
     if (timer->countdown_ms != 0) {
