@@ -321,16 +321,11 @@ void timer_stop(soft_timer_t* timer) {
 }
 
 void timer_step(soft_timer_t* timer, uint16_t time_step_ms) {
-    if (timer->state != TIMER_STATE_RUNNING) {
+    if ((timer->state != TIMER_STATE_RUNNING) || (timer->countdown_ms == 0)) {
         return;
     }
 
-    if ((timer->countdown_ms == 0) && (time_step_ms != 0)) {
-        return;
-    }
-
-    timer->countdown_ms = max(timer->countdown_ms, time_step_ms);
-    timer->countdown_ms -= time_step_ms;
+    timer->countdown_ms -= min(timer->countdown_ms, time_step_ms);
 
     if (timer->countdown_ms != 0) {
         return;
