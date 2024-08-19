@@ -18,6 +18,7 @@
  *****************************************/
 
 #define STOPPED_TIMER_COUNTDOWN_VALUE (0xFFFFFFFF)
+#define PRESCALER_MAX_VALUE (0xFFFF)
 
 #if SOFT_TIMER_MAX_TIMERS > 256
 #error SOFT_TIMER_MAX_INSTANCES cannot be greater than 256.
@@ -133,6 +134,14 @@ static uint32_t hard_timer_reload_get(TIM_HandleTypeDef* htim);
  */
 static void hard_timer_update(uint32_t timer_reload_ms);
 
+/**
+ * @brief Adjust the prescaler value to fit 0xFFFF limit.
+ *
+ * @param hclk_frequency hardware clock frequency to be devided by the prescaler
+ * @param prescaler pointer to prescaler value
+ */
+static void presc_adjust(uint32_t hclk_frequency, uint32_t* prescaler);
+
 /*****************************************
  * Private Types
  *****************************************/
@@ -186,6 +195,14 @@ static bool m_is_initialized = false;
  *       0xFFFFFFFF - 1, because 0xFFFFFFF is reserved for stopped timers.
  */
 static uint32_t m_max_reload_ms = 0xFFFF;
+
+/**
+ * @brief Multiply each timer's reload
+ *
+ * @note Used to avoid prescaler erros due to timers that require values
+ *       greater than 0xFFFF.
+ */
+static float m_reload_adjust = 1.0;
 
 /*****************************************
  * Public Functions Bodies Definitions
@@ -375,6 +392,10 @@ void hard_timer_init(TIM_HandleTypeDef* htim) {
     uint32_t hclk_frequency = HAL_RCC_GetHCLKFreq();
     uint32_t prescaler = HZ_TO_KHZ(hclk_frequency) - 1;
 
+    if (prescaler > PRESCALER_MAX_VALUE) {
+        presc_adjust(hclk_frequency, &prescaler);
+    }
+
     __HAL_TIM_SET_PRESCALER(htim, prescaler);
     __HAL_TIM_SET_AUTORELOAD(htim, m_max_reload_ms);
     __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
@@ -399,6 +420,7 @@ uint32_t hard_timer_counter_get(TIM_HandleTypeDef* htim) {
 }
 
 void hard_timer_reload_set(TIM_HandleTypeDef* htim, uint32_t reload_ms) {
+    reload_ms *= m_reload_adjust;
     reload_ms = min(reload_ms, m_max_reload_ms);
 
     __HAL_TIM_SET_AUTORELOAD(htim, reload_ms);
@@ -406,4 +428,21 @@ void hard_timer_reload_set(TIM_HandleTypeDef* htim, uint32_t reload_ms) {
 
 TIM_TypeDef* hard_timer_get_instance(TIM_HandleTypeDef* htim) {
     return htim->Instance;
+}
+
+void presc_adjust(uint32_t hclk_frequency, uint32_t* prescaler) {
+    bool max_div_found = false;
+
+    for (uint32_t i = 0xFFFF; !max_div_found; i--) {
+        uint32_t resto = hclk_frequency % i;
+        max_div_found = (hclk_frequency % i) == 0 ? true : false;
+
+        if (max_div_found) {
+            (*prescaler) = i - 1;
+            m_reload_adjust = (float) hclk_frequency / (i * 1000);
+            m_max_reload_ms /= m_reload_adjust;
+
+            return;
+        }
+    }
 }
