@@ -85,8 +85,10 @@ void soft_timer_destroy(soft_timer_t** timer);
 /**
  * @brief Configures timer.
  *
- * @note This function will configure a timer instance that is stopped.
+ * @note - This function will configure a timer instance that is stopped.
  *       Only configured timers may be started.
+ * @note - The reload value must be at least 2 and at most the maximum
+ *       value recalculated deppending on the timer frequency.
  *
  * @param timer     Pointer to timer instance to be configured.
  * @param callback  Pointer to timeout callback function.
