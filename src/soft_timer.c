@@ -431,13 +431,8 @@ TIM_TypeDef* hard_timer_get_instance(TIM_HandleTypeDef* htim) {
 }
 
 void presc_adjust(uint32_t hclk_frequency, uint32_t* prescaler) {
-    bool max_div_found = false;
-
-    for (uint32_t i = 0xFFFF; !max_div_found; i--) {
-        uint32_t resto = hclk_frequency % i;
-        max_div_found = (hclk_frequency % i) == 0 ? true : false;
-
-        if (max_div_found) {
+    for (uint32_t i = 0xFFFF; (hclk_frequency % i) == 0; i--) {
+        if ((hclk_frequency % i) == 0) {
             (*prescaler) = i - 1;
             m_reload_adjust = (float) hclk_frequency / (i * 1000);
             m_max_reload_ms /= m_reload_adjust;
